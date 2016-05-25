@@ -19,6 +19,10 @@ plt.gca().set_aspect('equal', adjustable='box')
 circle = plt.Circle((0,0), radius=.03, color='red')
 plt.gca().add_patch(circle)
 
+ICC = plt.Circle((0,0), radius=0, fc="none")
+plt.gca().add_patch(ICC)
+
+
 def angle_wrt_x(A,B):
     """Return the angle between B-A and the positive x-axis.
     Values go from 0 to pi in the upper half-plane, and from 
@@ -38,9 +42,13 @@ def on_click(event):
 	if event.button == 1:
 		if event.inaxes is ax:
 			circle.center = (event.xdata,event.ydata)
-			update()
-			fig.canvas.draw()
-
+		else:
+			clicklocation = [event.x, event.y]
+			figsize = fig.get_size_inches()*fig.dpi
+			circle.center = ( 1000*(clicklocation[0] - figsize[0]/2.)/figsize[0], 1000*(clicklocation[1] - figsize[1]/2.)/figsize[1])
+		update()
+		fig.canvas.draw()		
+		
 plt.connect('button_press_event', on_click)
 
 wheelcolors = [("darkmagenta","plum"),("blue","skyblue"),("green","lightgreen")]
@@ -107,7 +115,8 @@ def update():
 		arms[i].set_ydata([points[i][1],points[i][1]-pvt*math.sin(angles[i])])
 		wheels[i].set_xdata([points[i][0]+pvt*math.cos(angles[i]-math.pi)+math.cos(angles[i] + math.pi/2 )*wd/2,points[i][0]+pvt*math.cos(angles[i]-math.pi)-math.cos(angles[i] + math.pi/2 )*wd/2 ])
 		wheels[i].set_ydata([points[i][1]+pvt*math.sin(angles[i]-math.pi)+math.sin(angles[i] + math.pi/2 )*wd/2,points[i][1]+pvt*math.sin(angles[i]-math.pi)-math.sin(angles[i] + math.pi/2 )*wd/2 ])
-
+		ICC.center = circle.center
+		ICC.radius = math.hypot(circle.center[0], circle.center[1]) # Draws to (0,0 which is on robot frame )
 	fig.canvas.draw()
 
 plt.show()
