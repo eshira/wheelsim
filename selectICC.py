@@ -78,7 +78,46 @@ boundaries = [ Line2D( [ points[i][0]-bd*math.cos(math.pi-i*math.radians(60)),po
 				   	   [ points[i][1]-bd*math.sin(math.pi-i*math.radians(60)),points[i][1]+bd*math.sin(math.pi-i*math.radians(60)) ],\
 				   		linewidth=1,color="red") for i in range(3) ]
 for bound in boundaries:
-	ax.add_line(bound)
+	ax.add_line(bound)	
+
+# The wheel is flipped if it rotates past + or - 90 degrees
+# In the future, may make it optional (some robots will have a frame above the wheels)
+# Define for now the restrictions as a range less within [0,180] degrees to restrict the wheel
+restrictions = [[5,175],[5,175],[5,175]]
+# convert to format [alpha, beta] in radians
+restrictions = [ [ math.radians(rest[0]+i*120), math.radians(rest[1]+i*120) ] for rest,i in zip(restrictions,range(3))]
+
+#[ points[i][0]-bd*math.cos(math.pi-i*math.radians(60)),points[i][1]-bd*math.sin(math.pi-i*math.radians(60)) ] ,\
+#[ points[i][0]+bd*math.cos(math.pi-i*math.radians(60))], points[i][1]+bd*math.sin(math.pi-i*math.radians(60)) ],\
+
+ralphas =[\
+		 [\
+		 [ points[i][0]-bd*math.cos(math.pi-i*math.radians(60)),points[i][1]-bd*math.sin(math.pi-i*math.radians(60)) ] ,\
+		 [ points[i][0]+bd*math.cos(math.pi-i*math.radians(60)), points[i][1]+bd*math.sin(math.pi-i*math.radians(60)) ], \
+		 [points[i][0]-bd,points[i][1]-bd*math.sin(restrictions[i][0])/math.cos(restrictions[i][0])],\
+		 [points[i][0]+bd,points[i][1]+bd*math.sin(restrictions[i][0])/math.cos(restrictions[i][0])],\
+		 ]for i in range(3)]
+
+ralphas[2] = [ralphas[2][i] for i in [1,0,2,3]] # annoying fix needed for the last polygon, order of points. would like more elegant soln in future.
+
+rbetas =[\
+		 [\
+		 [ points[i][0]-bd*math.cos(math.pi-i*math.radians(60)),points[i][1]-bd*math.sin(math.pi-i*math.radians(60)) ] ,\
+		 [ points[i][0]+bd*math.cos(math.pi-i*math.radians(60)), points[i][1]+bd*math.sin(math.pi-i*math.radians(60)) ], \
+		 [points[i][0]-bd,points[i][1]-bd*math.sin(restrictions[i][1])/math.cos(restrictions[i][1])],\
+		 [points[i][0]+bd,points[i][1]+bd*math.sin(restrictions[i][1])/math.cos(restrictions[i][1])],\
+		 ]for i in range(3)]
+
+rbetas[2] = [rbetas[2][i] for i in [1,0,2,3]] # annoying fix needed for the last polygon, order of points. would like more elegant soln in future.
+
+shapesalphas = [plt.Polygon(shape,color='lightcoral') for shape in ralphas]
+shapesbetas =  [plt.Polygon(shape,color='lightcoral') for shape in rbetas]
+
+for shape in shapesalphas:
+	plt.gca().add_patch(shape)
+
+for shape in shapesbetas:
+	plt.gca().add_patch(shape)
 
 # Compute angles between norms and the x positive axis
 angles = [ angle_wrt_x((points[i][0],points[i][1]),(circle.center[0],circle.center[1]))for i in range(3)]
